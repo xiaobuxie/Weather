@@ -19,16 +19,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         LitePal.initialize(this);
         setContentView(R.layout.activity_main);
-
-
-        Button createDatabases = (Button) findViewById(R.id.create_db);
-        createDatabases.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View view) {
-                Toast.makeText(getApplicationContext(),"jjjjj",Toast.LENGTH_SHORT).show();
-                SQLiteDatabase db = LitePal.getDatabase();
-            }
-        });
+        SQLiteDatabase db = LitePal.getDatabase();
     }
 }
