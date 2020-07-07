@@ -1,8 +1,10 @@
 package com.example.weather;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,7 @@ import androidx.fragment.app.Fragment;
 import com.example.weather.db.City;
 import com.example.weather.db.County;
 import com.example.weather.db.Province;
+import com.example.weather.gson.Weather;
 import com.example.weather.util.HttpUtil;
 import com.example.weather.util.Utility;
 
@@ -77,6 +80,20 @@ public class ChooseAreaFragment extends Fragment {
                 } else if (currentLevel == LEVEL_CITY){
                     selectedCity = cityList.get(postion);
                     queryCounties();
+                } else if(currentLevel == LEVEL_COUNTY){
+                    String weatherId = countyList.get(postion).getWeatherId();
+                    if(getActivity() instanceof MainActivity ){
+                        Intent intent = new Intent(getActivity(), WeatherActivity.class);
+                        intent.putExtra("weather_id",weatherId);
+                        startActivity(intent);
+                        //getActivity().finish();
+                    } else if( getActivity() instanceof WeatherActivity){
+                        WeatherActivity activity = (WeatherActivity) getActivity();
+                        activity.drawerLayout.closeDrawers();
+                        activity.swipeRefreshLayout.setRefreshing(true);
+                        activity.requestWeather(weatherId);
+                    }
+
                 }
 
             }
@@ -98,6 +115,7 @@ public class ChooseAreaFragment extends Fragment {
     //查询全国所有省,优先从数据库查询，没有在从服务器上查
     private void queryProvinces(){
         SQLiteDatabase db = LitePal.getDatabase();
+        Log.d("hjjnb","inhere");
         titleText.setText("中国");
         backButton.setVisibility(View.GONE);
         provinceList = LitePal.findAll(Province.class);
@@ -155,6 +173,7 @@ public class ChooseAreaFragment extends Fragment {
             int provinceCode = selectedProvince.getProvinceCode();
             int cityCode = selectedCity.getCityCode();
             String address = "http://guolin.tech/api/china/" + provinceCode + "/" + cityCode;
+            Log.d("xbx",address);
             queryFromServer(address,"county");
         }
     }
@@ -177,6 +196,7 @@ public class ChooseAreaFragment extends Fragment {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+                Log.d("hjjnb","lodingd");
                 String responseText = response.body().string();
                 boolean result = false;
                 if("province".equals(type)){
@@ -184,6 +204,7 @@ public class ChooseAreaFragment extends Fragment {
                 } else if("city".equals(type)){
                     result = Utility.handleCityResponse(responseText,selectedProvince.getId());
                 } else if ("county".equals(type)){
+                    Log.d("xbx","3ok");
                     result = Utility.handleCountyResponse(responseText,
                             selectedCity.getId());
                 }
